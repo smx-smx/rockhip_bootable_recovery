@@ -12,8 +12,8 @@
 #define usb_path "/mnt/usb_storage/"
 #define sd_path "/mnt/external_sd/"
 
-#define BASEPARAMER_PARTITION_NAME "/baseparamer"
-#define BASEPARAMER_PARTITION_SIZE 1024
+#define BASEPARAMER_PARTITION_NAME "/baseparameter"
+#define BASEPARAMER_PARTITION_SIZE 1024*1024/2
 
 #define NET_FILE_PATH          "./sys/class/net_cmcc_gpio/net_cmcc_led"
 #define NET_FILE_PATH_NEW      "/sys/class/leds/net-green/brightness"
@@ -52,7 +52,7 @@ static const char *typeName[] = {
 };
 char* check_media_package(const char *path);
 char* getSerial();
-int erase_baseparamer();
+int erase_baseparameter();
 void startLed();
 void stopLed(int state);
 void setFlashPoint();

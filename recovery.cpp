@@ -769,6 +769,9 @@ static bool wipe_data(Device* device) {
     if (success) {
       success &= device->PostWipeData();
     }
+
+    erase_baseparameter();
+
     ui->Print("Data wipe %s.\n", success ? "complete" : "failed");
     return success;
 }

@@ -122,8 +122,9 @@ char *getSerial(){
 /**
  * reset hdmi after restore factory.
 */
-int erase_baseparamer() {
+int erase_baseparameter() {
     Volume* v = volume_for_mount_point(BASEPARAMER_PARTITION_NAME);
+    //Volume* v = volume_for_path(BASEPARAMER_PARTITION_NAME);
     if (v == NULL) {
         printf("unknown volume baseparamer, not erase baseparamer\n");
         return -1;
@@ -135,12 +136,14 @@ int erase_baseparamer() {
         printf("baseparamer file can not be opened");
         return -1;
     }
-    lseek(file, 0L, SEEK_SET);
+    lseek(file, BASEPARAMER_PARTITION_SIZE, SEEK_SET);
 
-    //size of baseparamer.
+    //size of baseparameter.
     char buf[BASEPARAMER_PARTITION_SIZE];
     memset(buf, 0, BASEPARAMER_PARTITION_SIZE);
+    read(file, buf, BASEPARAMER_PARTITION_SIZE);
 
+    lseek(file, 0L, SEEK_SET);
     write(file, (char*)(&buf), BASEPARAMER_PARTITION_SIZE);
     close(file);
     sync();
