@@ -204,6 +204,7 @@ LOCAL_STATIC_LIBRARIES += \
     libhidl-gen-utils \
     libtinyxml2 \
     libbase \
+    libavvin \
     libutils \
     libcutils \
     liblog \
@@ -304,4 +305,5 @@ include \
     $(LOCAL_PATH)/updater/Android.mk \
     $(LOCAL_PATH)/update_verifier/Android.mk \
     $(LOCAL_PATH)/rkupdate/update/Android.mk \
-    $(LOCAL_PATH)/rkupdate/rsa/Android.mk
+    $(LOCAL_PATH)/rkupdate/rsa/Android.mk \
+    $(LOCAL_PATH)/rkavvin/avvin/Android.mk

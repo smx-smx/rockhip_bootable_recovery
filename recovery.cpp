@@ -74,6 +74,7 @@
 #include "stub_ui.h"
 #include "ui.h"
 #include "rktools.h"
+#include "rkavvin/RkAvvinApi.h"
 
 static const struct option OPTIONS[] = {
   { "update_package", required_argument, NULL, 'u' },
@@ -1438,6 +1439,7 @@ int main(int argc, char **argv) {
     free(SerialName);
 #endif
   printf("Starting recovery (pid %d) on %s", getpid(), ctime(&start));
+  int n = player_ext_init();
 
   load_volume_table();
   //todo noneed wipe cache in bringup
