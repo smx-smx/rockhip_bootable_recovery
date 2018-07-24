@@ -88,6 +88,7 @@ static const struct option OPTIONS[] = {
   { "shutdown_after", no_argument, NULL, 'p' },
   { "reason", required_argument, NULL, 'r' },
   { "security", no_argument, NULL, 'e'},
+  { "wipe_all", no_argument, NULL, 'w'+'a' },
   { "wipe_ab", no_argument, NULL, 0 },
   { "wipe_package_size", required_argument, NULL, 0 },
   { "prompt_and_wipe_data", no_argument, NULL, 0 },
@@ -1445,6 +1446,7 @@ int main(int argc, char **argv) {
 
   const char* update_package = nullptr;
   bool should_wipe_data = false;
+  bool should_wipe_all = false;
   bool should_prompt_and_wipe_data = false;
   bool should_wipe_cache = false;
   bool should_wipe_ab = false;
@@ -1499,6 +1501,7 @@ int main(int argc, char **argv) {
       case 'e':
         security_update = true;
         break;
+	  case 'w'+'a': { should_wipe_all = true; should_wipe_data = true; should_wipe_cache = true;} break;
       case 0: {
             std::string option = OPTIONS[option_index].name;
             if (option == "wipe_ab") {
