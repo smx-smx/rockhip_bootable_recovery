@@ -74,6 +74,7 @@ LOCAL_SRC_FILES := \
     device.cpp \
     fuse_sdcard_provider.cpp \
     recovery.cpp \
+    rktools.cpp \
     roots.cpp \
     rotate_logs.cpp \
     screen_ui.cpp \
@@ -85,7 +86,28 @@ LOCAL_MODULE := recovery
 
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 
-LOCAL_REQUIRED_MODULES := e2fsdroid_static mke2fs_static mke2fs.conf
+//LOCAL_REQUIRED_MODULES := e2fsdroid_static mke2fs_static mke2fs.conf
+
+#redirect to SDCARD¡¢CACHE¡¢UART
+#SDCARD: save log to sdcard
+#CACHE: save log to /cache/recovery/ dir
+#UART: redirect log to uart output
+REDIRECT_LOG_TO := UART
+
+ifeq ($(strip $(REDIRECT_LOG_TO)),SDCARD)
+  $(warning *** Redirect log to SDCARD)
+  LOCAL_CFLAGS += -DLogToSDCard
+endif
+
+ifeq ($(strip $(REDIRECT_LOG_TO)),UART)
+  $(warning *** Redirect log to UART)
+  LOCAL_CFLAGS += -DLogToSerial
+endif
+
+ifeq ($(strip $(REDIRECT_LOG_TO)),CACHE)
+  $(warning *** Redirect log to CACHE)
+  LOCAL_CFLAGS += -DLogToCache
+endif
 
 ifeq ($(TARGET_USERIMAGES_USE_F2FS),true)
 ifeq ($(HOST_OS),linux)

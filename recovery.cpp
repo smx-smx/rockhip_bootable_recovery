@@ -73,6 +73,7 @@
 #include "screen_ui.h"
 #include "stub_ui.h"
 #include "ui.h"
+#include "rktools.h"
 
 static const struct option OPTIONS[] = {
   { "update_package", required_argument, NULL, 'u' },
@@ -223,7 +224,7 @@ bool reboot(const std::string& command) {
     return android::base::SetProperty(ANDROID_RB_PROPERTY, cmd);
 }
 
-static void redirect_stdio(const char* filename) {
+/*static void redirect_stdio(const char* filename) {
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         PLOG(ERROR) << "pipe failed";
@@ -307,7 +308,7 @@ static void redirect_stdio(const char* filename) {
 
         close(pipefd[1]);
     }
-}
+}*/
 
 // command line args come from, in decreasing precedence:
 //   - the actual command line
@@ -1416,8 +1417,17 @@ int main(int argc, char **argv) {
 
   // redirect_stdio should be called only in non-sideload mode. Otherwise
   // we may have two logger instances with different timestamps.
-  redirect_stdio(TEMPORARY_LOG_FILE);
+#ifdef LogToCache
+    redirect_stdio(TEMPORARY_LOG_FILE);
+#endif
 
+#ifdef LogToSerial
+    char *SerialName = getSerial();
+	//ui->Print("SerialName: %s\n", SerialName);
+    freopen(SerialName, "a", stdout); setbuf(stdout, NULL);
+    freopen(SerialName, "a", stderr); setbuf(stderr, NULL);
+    free(SerialName);
+#endif
   printf("Starting recovery (pid %d) on %s", getpid(), ctime(&start));
 
   load_volume_table();
@@ -1427,6 +1437,11 @@ int main(int argc, char **argv) {
   std::vector<char*> args_to_parse(args.size());
   std::transform(args.cbegin(), args.cend(), args_to_parse.begin(),
                  [](const std::string& arg) { return const_cast<char*>(arg.c_str()); });
+
+#ifdef LogToSDCard
+      rksdboot.ensure_sd_mounted();
+          redirect_stdio(SDCARD_LOG_FILE);
+#endif
 
   const char* update_package = nullptr;
   bool should_wipe_data = false;
@@ -1485,21 +1500,27 @@ int main(int argc, char **argv) {
         security_update = true;
         break;
       case 0: {
-        std::string option = OPTIONS[option_index].name;
-        if (option == "wipe_ab") {
-          should_wipe_ab = true;
-        } else if (option == "wipe_package_size") {
-          android::base::ParseUint(optarg, &wipe_package_size);
-        } else if (option == "prompt_and_wipe_data") {
-          should_prompt_and_wipe_data = true;
+            std::string option = OPTIONS[option_index].name;
+            if (option == "wipe_ab") {
+                should_wipe_ab = true;
+            } else if (option == "wipe_package_size") {
+                android::base::ParseUint(optarg, &wipe_package_size);
+            } else if (option == "prompt_and_wipe_data") {
+                should_prompt_and_wipe_data = true;
+            }
+            break;
         }
-        break;
-      }
-      case '?':
-        LOG(ERROR) << "Invalid command argument";
-        continue;
+	/*
+        case 'f'+'w': //fw_update
+            if((optarg)&&(!sdboot_update_package)){
+                sdboot_update_package = strdup(optarg);
+            }
+            break;*/
+        case '?':
+            LOG(ERROR) << "Invalid command argument";
+            continue;
+        }
     }
-  }
 
   if (locale.empty()) {
     if (has_cache) {
