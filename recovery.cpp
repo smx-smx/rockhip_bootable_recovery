@@ -1432,7 +1432,8 @@ int main(int argc, char **argv) {
   printf("Starting recovery (pid %d) on %s", getpid(), ctime(&start));
 
   load_volume_table();
-  has_cache = volume_for_mount_point(CACHE_ROOT) != nullptr;
+  //todo noneed wipe cache in bringup
+  //has_cache = volume_for_mount_point(CACHE_ROOT) != nullptr;
 
   std::vector<std::string> args = get_args(argc, argv);
   std::vector<char*> args_to_parse(args.size());
