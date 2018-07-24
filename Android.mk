@@ -86,7 +86,7 @@ LOCAL_MODULE := recovery
 
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 
-//LOCAL_REQUIRED_MODULES := e2fsdroid_static mke2fs_static mke2fs.conf
+LOCAL_REQUIRED_MODULES := e2fsdroid_static mke2fs_static mke2fs.conf
 
 #redirect to SDCARD¡¢CACHE¡¢UART
 #SDCARD: save log to sdcard
@@ -116,7 +116,7 @@ endif
 endif
 
 LOCAL_CFLAGS += -DRECOVERY_API_VERSION=$(RECOVERY_API_VERSION)
-LOCAL_CFLAGS += -Wall -Werror
+LOCAL_CFLAGS += -Werror
 
 ifneq ($(TARGET_RECOVERY_UI_MARGIN_HEIGHT),)
 LOCAL_CFLAGS += -DRECOVERY_UI_MARGIN_HEIGHT=$(TARGET_RECOVERY_UI_MARGIN_HEIGHT)

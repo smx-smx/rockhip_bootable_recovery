@@ -83,9 +83,21 @@ GRSurface* MinuiBackendFbdev::Init() {
       "  vi.bits_per_pixel = %d\n"
       "  vi.red.offset   = %3d   .length = %3d\n"
       "  vi.green.offset = %3d   .length = %3d\n"
-      "  vi.blue.offset  = %3d   .length = %3d\n",
+      "  vi.blue.offset  = %3d   .length = %3d\n"
+      "  fi.line_length = %d\n",
       vi.bits_per_pixel, vi.red.offset, vi.red.length, vi.green.offset, vi.green.length,
-      vi.blue.offset, vi.blue.length);
+      vi.blue.offset, vi.blue.length, fi.line_length);
+	//GGL_PIXEL_FORMAT_RGBX_8888
+	vi.red.offset     = 0;
+	vi.red.length     = 8;
+	vi.green.offset   = 8;
+	vi.green.length   = 8;	
+	vi.blue.offset    = 16;
+	vi.blue.length    = 8;
+	vi.transp.offset  = 24;
+	vi.transp.length  = 8;
+	vi.bits_per_pixel = 32;
+	vi.nonstd = 2;
 
   void* bits = mmap(0, fi.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (bits == MAP_FAILED) {
@@ -99,6 +111,7 @@ GRSurface* MinuiBackendFbdev::Init() {
   gr_framebuffer[0].width = vi.xres;
   gr_framebuffer[0].height = vi.yres;
   gr_framebuffer[0].row_bytes = fi.line_length;
+	gr_framebuffer[0].row_bytes = vi.xres * 4;
   gr_framebuffer[0].pixel_bytes = vi.bits_per_pixel / 8;
   gr_framebuffer[0].data = static_cast<uint8_t*>(bits);
   memset(gr_framebuffer[0].data, 0, gr_framebuffer[0].height * gr_framebuffer[0].row_bytes);
@@ -147,6 +160,13 @@ GRSurface* MinuiBackendFbdev::Flip() {
     // then flip the driver so we're displaying the other buffer
     // instead.
     gr_draw = gr_framebuffer + displayed_buffer;
+#ifdef RotateScreen_90
+        rk_rotate_surface_90(gr_framebuffer[1-displayed_buffer].data, gr_framebuffer[1-displayed_buffer].height, gr_framebuffer[1-displayed_buffer].width);
+#elif defined RotateScreen_180
+        rk_rotate_surface_180(gr_framebuffer[1-displayed_buffer].data, gr_framebuffer[1-displayed_buffer].height, gr_framebuffer[1-displayed_buffer].width);
+#elif defined RotateScreen_270
+        rk_rotate_surface_270(gr_framebuffer[1-displayed_buffer].data, gr_framebuffer[1-displayed_buffer].height, gr_framebuffer[1-displayed_buffer].width);
+#endif
     SetDisplayedFramebuffer(1 - displayed_buffer);
   } else {
     // Copy from the in-memory surface to the framebuffer.

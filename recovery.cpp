@@ -224,7 +224,7 @@ bool reboot(const std::string& command) {
     return android::base::SetProperty(ANDROID_RB_PROPERTY, cmd);
 }
 
-/*static void redirect_stdio(const char* filename) {
+static void redirect_stdio(const char* filename) {
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         PLOG(ERROR) << "pipe failed";
@@ -308,7 +308,7 @@ bool reboot(const std::string& command) {
 
         close(pipefd[1]);
     }
-}*/
+}
 
 // command line args come from, in decreasing precedence:
 //   - the actual command line
