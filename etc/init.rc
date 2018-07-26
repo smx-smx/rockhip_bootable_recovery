@@ -22,6 +22,7 @@ on init
     mkdir /data
     mkdir /cache
     mkdir /sideload
+    mkdir /metadata
     mount tmpfs tmpfs /tmp
 
     chown root shell /tmp

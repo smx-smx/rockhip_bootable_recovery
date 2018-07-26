@@ -1388,6 +1388,14 @@ static void log_failure_code(ErrorCode code, const char *update_package) {
     LOG(INFO) << log_content;
 }
 
+void SureMetadataMount() {
+    if (ensure_path_mounted("/metadata")) {
+        printf("mount metadata fail,so formate...\n");
+        tmplog_offset = 0;
+        format_volume("/metadata");
+        ensure_path_mounted("/metadata");
+    }
+}
 int main(int argc, char **argv) {
   // We don't have logcat yet under recovery; so we'll print error on screen and
   // log to stdout (which is redirected to recovery.log) as we used to do.
@@ -1433,7 +1441,7 @@ int main(int argc, char **argv) {
 
   load_volume_table();
   //todo noneed wipe cache in bringup
-  //has_cache = volume_for_mount_point(CACHE_ROOT) != nullptr;
+  has_cache = volume_for_mount_point(CACHE_ROOT) != nullptr;
 
   std::vector<std::string> args = get_args(argc, argv);
   std::vector<char*> args_to_parse(args.size());
@@ -1573,6 +1581,7 @@ int main(int argc, char **argv) {
 
   device->StartRecovery();
 
+    SureMetadataMount();
   printf("Command:");
   for (const auto& arg : args) {
     printf(" \"%s\"", arg.c_str());
