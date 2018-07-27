@@ -45,8 +45,10 @@ updater_common_static_libraries := \
     libbase \
     libcrypto \
     libcrypto_utils \
-    libcutils \
     libtune2fs \
+    librkupdate  \
+    libext2_uuid \
+    libcutils \
     libbrotli \
     $(tune2fs_static_libraries)
 

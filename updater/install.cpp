@@ -63,6 +63,7 @@
 #include "otautil/error_code.h"
 #include "otautil/print_sha1.h"
 #include "updater/updater.h"
+#include "rkupdate/Upgrade.h"
 
 // Send over the buffer to recovery though the command pipe.
 static void uiPrint(State* state, const std::string& buffer) {
@@ -1010,6 +1011,22 @@ Value* Tune2FsFn(const char* name, State* state, const std::vector<std::unique_p
   return StringValue("t");
 }
 
+Value* WriteRawLoaderImageFn(const char* name, State* state, const std::vector<std::unique_ptr<Expr>>& argv) {
+    bool bRet = false;
+    std::string loader_bin("/tmp/RKLoader.bin");
+    void *pCallback = NULL;
+    void *pProgressCallback = NULL;
+    char *szBootDev = NULL;
+    if(access(loader_bin.c_str(), F_OK) == 0){
+	printf("/tmp/RKLoader.bin access.\n");
+	bRet= do_rk_firmware_upgrade((char *)loader_bin.c_str(), pCallback, pProgressCallback, szBootDev);
+    }else{
+	bRet = false;
+	printf("ERROR:/tmp/RKLoader.bin cannot access.\n");
+    }
+    return StringValue(strdup(bRet ? "t" : ""));
+}
+
 void RegisterInstallFunctions() {
   RegisterFunction("mount", MountFn);
   RegisterFunction("is_mounted", IsMountedFn);
@@ -1018,6 +1035,7 @@ void RegisterInstallFunctions() {
   RegisterFunction("show_progress", ShowProgressFn);
   RegisterFunction("set_progress", SetProgressFn);
   RegisterFunction("package_extract_file", PackageExtractFileFn);
+  RegisterFunction("write_raw_loader_image", WriteRawLoaderImageFn);
 
   RegisterFunction("getprop", GetPropFn);
   RegisterFunction("file_getprop", FileGetPropFn);
