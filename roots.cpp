@@ -125,8 +125,7 @@ int ensure_path_mounted_at(const char* path, const char* mount_point) {
 
   mkdir(mount_point, 0755);  // in case it doesn't already exist
 
-  if (strcmp(v->fs_type, "ext4") == 0 || strcmp(v->fs_type, "squashfs") == 0 ||
-      strcmp(v->fs_type, "vfat") == 0) {
+  if (strcmp(v->fs_type, "ext4") == 0 || strcmp(v->fs_type, "squashfs") == 0 ) {
     int result = mount(v->blk_device, mount_point, v->fs_type, v->flags, v->fs_options);
     if (result == -1 && fs_mgr_is_formattable(v)) {
       PLOG(ERROR) << "Failed to mount " << mount_point << "; formatting";
@@ -144,7 +143,35 @@ int ensure_path_mounted_at(const char* path, const char* mount_point) {
       return -1;
     }
     return 0;
-  }
+  }else if(strcmp(v->fs_type, "vfat") == 0){
+        int result = mount(v->blk_device, v->mount_point, v->fs_type,
+                           MS_NOATIME | MS_NODEV | MS_NODIRATIME, "shortname=mixed,utf8");
+        if (result == 0) return 0;
+
+        LOG(ERROR) << "trying mount "<< v->blk_device << " to ntfs.";
+        result = mount(v->blk_device, v->mount_point, "ntfs",
+                       MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+        if (result == 0) return 0;
+
+        char *sec_dev = v->fs_options;
+        if(sec_dev != NULL) {
+            char *temp = strchr(sec_dev, ',');
+            if(temp) {
+                temp[0] = '\0';
+            }
+
+            result = mount(sec_dev, v->mount_point, v->fs_type,
+                           MS_NOATIME | MS_NODEV | MS_NODIRATIME, "shortname=mixed,utf8");
+            if (result == 0) return 0;
+
+            LOG(ERROR) << "tring mount " << sec_dev << " ntfs.";
+            result = mount(sec_dev, v->mount_point, "ntfs",
+                           MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+            if (result == 0) return 0;
+        }
+        LOG(ERROR) << "failed to mount " << v->mount_point << " error: " << strerror(errno);
+        return -1;
+   }
 
   LOG(ERROR) << "unknown fs_type \"" << v->fs_type << "\" for " << mount_point;
   return -1;

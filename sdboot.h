@@ -11,6 +11,11 @@
 #include <string>
 #include <sstream>
 
+#define EX_SDCARD_ROOT "/mnt/external_sd"
+#define USB_ROOT "/mnt/usb_storage"
+#define MAX_ARGS 100
+#define SD_POINT_NAME "sd_point_name"
+
 typedef struct {
     char* name;
     char* value;
@@ -28,12 +33,14 @@ public:
     SDBoot();
     bool isSDboot();
     bool isUSBboot();
-    bool get_args(int *argc, char ***argv);
+    std::vector<std::string> get_args(int argc, char **argv);
     void ensure_usb_mounted();
     void ensure_sd_mounted();
     int do_rk_mode_update(const char *pFile);
     void check_device_remove();
     int do_rk_factory_mode();
+	int do_rk_direct_sd_update(const char *pFile);
+	bool do_direct_parse_config_file(const char *pConfigFile,VEC_SD_CONFIG &vecItem);
 private:
     int status;
     bool bSDBoot;
@@ -41,13 +48,12 @@ private:
     bool bUpdateModel;
     bool bSDMounted;
     bool bUsbMounted;
-    std::string EX_SDCARD_ROOT;
     std::string IN_SDCARD_ROOT;
     std::string USB_DEVICE_PATH;
     void bootwhere();
-    bool get_args_from_sd(int *argc, char ***argv,bool *bmalloc);
-    bool get_args_from_usb(int *argc, char ***argv,bool *bmalloc);
-    bool get_sd_config(char *path, int *argc, char ***argv,bool *bmalloc);
+    std::vector<std::string> get_args_from_sd(int argc, char **argv);
+    std::vector<std::string> get_args_from_usb(int argc, char **argv);
+    std::vector<std::string> get_sd_config(char *path, int argc, char **argv);
     bool parse_config(char *pConfig,VEC_SD_CONFIG &vecItem);
     bool parse_config_file(const char *pConfigFile,VEC_SD_CONFIG &vecItem);
     int mount_usb_device();

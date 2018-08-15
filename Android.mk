@@ -75,6 +75,7 @@ LOCAL_SRC_FILES := \
     fuse_sdcard_provider.cpp \
     recovery.cpp \
     rktools.cpp \
+    sdboot.cpp \
     roots.cpp \
     rotate_logs.cpp \
     screen_ui.cpp \
@@ -116,7 +117,7 @@ endif
 endif
 
 LOCAL_CFLAGS += -DRECOVERY_API_VERSION=$(RECOVERY_API_VERSION)
-LOCAL_CFLAGS += -Werror
+LOCAL_CFLAGS += -Wno-error
 
 ifneq ($(TARGET_RECOVERY_UI_MARGIN_HEIGHT),)
 LOCAL_CFLAGS += -DRECOVERY_UI_MARGIN_HEIGHT=$(TARGET_RECOVERY_UI_MARGIN_HEIGHT)

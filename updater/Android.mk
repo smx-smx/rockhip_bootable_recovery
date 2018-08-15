@@ -67,9 +67,7 @@ LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/include \
     external/e2fsprogs/misc
 
-LOCAL_CFLAGS := \
-    -Wall \
-    -Werror
+LOCAL_CFLAGS := -Wno-error
 
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
     $(LOCAL_PATH)/include

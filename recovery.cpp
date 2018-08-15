@@ -1623,8 +1623,11 @@ int main(int argc, char **argv) {
       if (retry_count == 0) {
         set_retry_bootloader_message(retry_count + 1, args);
       }
+      const char *reallyPath = check_media_package(update_package);
+            if(reallyPath == NULL)
+                reallyPath = update_package;
 
-      status = install_package(update_package, &should_wipe_cache, TEMPORARY_INSTALL_FILE, true,
+      status = install_package(reallyPath, &should_wipe_cache, TEMPORARY_INSTALL_FILE, true,
                                retry_count);
       if (status == INSTALL_SUCCESS && should_wipe_cache) {
         wipe_cache(false, device);
