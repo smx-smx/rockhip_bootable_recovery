@@ -46,7 +46,7 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := \
     install.cpp
-LOCAL_CFLAGS := -Wall -Werror
+LOCAL_CFLAGS := -Wno-error
 LOCAL_CFLAGS += -DRECOVERY_API_VERSION=$(RECOVERY_API_VERSION)
 
 ifeq ($(AB_OTA_UPDATER),true)
@@ -196,6 +196,7 @@ LOCAL_STATIC_LIBRARIES += \
     libminadbd \
     libasyncio \
     libfusesideload \
+	libmtdutils \
     libminui \
     libpng \
     libcrypto_utils \
@@ -307,4 +308,5 @@ include \
     $(LOCAL_PATH)/update_verifier/Android.mk \
     $(LOCAL_PATH)/rkupdate/update/Android.mk \
     $(LOCAL_PATH)/rkupdate/rsa/Android.mk \
-    $(LOCAL_PATH)/rkavvin/avvin/Android.mk
+    $(LOCAL_PATH)/rkavvin/avvin/Android.mk \
+	$(LOCAL_PATH)/mtdutils/Android.mk
