@@ -547,7 +547,7 @@ static bool erase_volume(const char* volume) {
     std::unique_ptr<DIR, decltype(&closedir)> d(opendir(CACHE_LOG_DIR), closedir);
     if (d) {
       while ((de = readdir(d.get())) != nullptr) {
-        if (strncmp(de->d_name, "last_", 5) == 0 || strcmp(de->d_name, "log") == 0 || strncmp(de->d_name, "Recovery_", 9)) {
+        if (strncmp(de->d_name, "last_", 5) == 0 || strcmp(de->d_name, "log") == 0 || strncmp(de->d_name, "Recovery_", 9) == 0 ) {
           std::string path = android::base::StringPrintf("%s/%s", CACHE_LOG_DIR, de->d_name);
 
           struct stat sb;
