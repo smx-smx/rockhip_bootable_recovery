@@ -196,7 +196,7 @@ LOCAL_STATIC_LIBRARIES += \
     libminadbd \
     libasyncio \
     libfusesideload \
-	libmtdutils \
+    libmtdutils \
     libminui \
     libpng \
     libcrypto_utils \
@@ -309,4 +309,4 @@ include \
     $(LOCAL_PATH)/rkupdate/update/Android.mk \
     $(LOCAL_PATH)/rkupdate/rsa/Android.mk \
     $(LOCAL_PATH)/rkavvin/avvin/Android.mk \
-	$(LOCAL_PATH)/mtdutils/Android.mk
+    $(LOCAL_PATH)/mtdutils/Android.mk

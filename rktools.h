@@ -26,10 +26,7 @@
 #define EMMC_POINT_NAME "emmc_point_name"
 #define SD_POINT_NAME "sd_point_name"
 #define SD_POINT_NAME_2 "sd_point_name_2"
-#define EMMC_POINT_0 "/dev/block/mmcblk0"
-#define EMMC_POINT_1 "/dev/block/mmcblk1"
-#define SD_POINT_0 "/dev/block/mmcblk0"
-#define SD_POINT_1 "/dev/block/mmcblk1"
+
 static const char *point_items[] = {
     "/dev/block/mmcblk0",
     "/dev/block/mmcblk1",
@@ -50,6 +47,7 @@ static const char *typeName[] = {
     "SDIO",
     "SDcombo",
 };
+
 char* check_media_package(const char *path);
 char* getSerial();
 int erase_baseparameter();
@@ -57,4 +55,7 @@ void startLed();
 void stopLed(int state);
 void setFlashPoint();
 void dumpCmdArgs(int argc, char** argv);
+void SplitString(const std::string& s, std::string& result, const std::string& c);
+int getEmmcState();
+bool IsSpecialName(const char *str);
 #endif
