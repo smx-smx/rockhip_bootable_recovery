@@ -111,7 +111,11 @@ static const char *CONVERT_FBE_DIR = "/tmp/convert_fbe";
 static const char *CONVERT_FBE_FILE = "/tmp/convert_fbe/convert_fbe";
 static const char *CACHE_ROOT = "/cache";
 static const char *DATA_ROOT = "/data";
+#ifdef AB_OTA_UPDATER
+static const char* METADATA_ROOT = "/mnt/vendor/metadata";
+#else
 static const char* METADATA_ROOT = "/metadata";
+#endif
 static const char *SDCARD_ROOT = "/sdcard";
 static const char *TEMPORARY_LOG_FILE = "/tmp/recovery.log";
 static const char *TEMPORARY_INSTALL_FILE = "/tmp/last_install";
@@ -1393,11 +1397,11 @@ static void log_failure_code(ErrorCode code, const char *update_package) {
 }
 
 void SureMetadataMount() {
-    if (ensure_path_mounted("/metadata")) {
+    if (ensure_path_mounted(METADATA_ROOT)) {
         printf("mount metadata fail,so formate...\n");
         tmplog_offset = 0;
-        format_volume("/metadata");
-        ensure_path_mounted("/metadata");
+        format_volume(METADATA_ROOT);
+        ensure_path_mounted(METADATA_ROOT);
     }
 }
 int main(int argc, char **argv) {
