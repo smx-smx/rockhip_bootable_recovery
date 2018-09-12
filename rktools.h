@@ -26,6 +26,9 @@
 #define EMMC_POINT_NAME "emmc_point_name"
 #define SD_POINT_NAME "sd_point_name"
 #define SD_POINT_NAME_2 "sd_point_name_2"
+#ifdef AB_OTA_UPDATER
+#define SD_BLOCK_DEVICE_NODE	("/dev/block/mmcblk0p1")
+#endif
 
 static const char *point_items[] = {
     "/dev/block/mmcblk0",

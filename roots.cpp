@@ -101,7 +101,105 @@ static Volume* volume_for_path(const char* path) {
 int ensure_path_mounted_at(const char* path, const char* mount_point) {
   Volume* v = volume_for_path(path);
   if (v == nullptr) {
-    LOG(ERROR) << "unknown volume for path [" << path << "]";
+	  LOG(ERROR) << "unknown volume for path [" << path << "]";
+#ifdef AB_OTA_UPDATER
+	  if(NULL == mount_point)
+	  {
+		  LOG(ERROR) << "AB firmware, first check mount_point is NULL!";
+		  if(NULL == path)
+		  {
+			  LOG(ERROR) << "AB firmware, path and mount_point both null !";
+			  return -1;
+		  }
+		  else
+		  {
+			  mount_point = path;
+		  }
+	  }
+	  if(mount_point != NULL)
+	  {
+		  LOG(ERROR) << "AB firmware,  mount_point[" << mount_point << "]";
+		  if(strcmp("/mnt/external_sd", mount_point) == 0)
+		  {
+			  char *blk_device = NULL;
+			  char *sec_dev = NULL;
+
+			  LOG(ERROR) << "AB firmware,  sdcard mount, mount_point[" << mount_point << "]";
+			  if (!scan_mounted_volumes()) {
+				  LOG(ERROR) << "failed to scan mounted volumes";
+				  return -1;
+			  }
+			  MountedVolume* mv = find_mounted_volume_by_mount_point(mount_point);
+			  if (mv) {
+				  // volume is already mounted
+				  LOG(ERROR) << " volume is already mounted";
+				  return 0;
+			  }
+			   mkdir(mount_point, 0755);  // in case it doesn't already exist
+			   blk_device = getenv(SD_POINT_NAME);
+			  if(blk_device == NULL){
+				  setFlashPoint();
+				  blk_device = getenv(SD_POINT_NAME);
+			  }
+			  if(NULL == blk_device)
+			  {
+				  blk_device = (char*)SD_BLOCK_DEVICE_NODE;
+			  }
+			  LOG(ERROR) << "AB firmware,  sdcard mount, blk_device[" << blk_device << "]";
+			  if(blk_device != NULL)
+			  {
+				  int result = mount(blk_device, mount_point, "vfat",
+					 MS_NOATIME | MS_NODEV | MS_NODIRATIME, "shortname=mixed,utf8");
+				  if (result == 0)
+				  {
+					  LOG(ERROR) << " mounted sdcard successful, vfat!";
+					  return 0;
+				  }
+
+				  LOG(ERROR) << "trying mount "<< blk_device << " to ntfs.";
+				  result = mount(blk_device, mount_point, "ntfs",
+								 MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+				  if (result == 0)
+				  {
+					  LOG(ERROR) << " mounted sdcard successful, ntfs!";
+					  return 0;
+				  }
+
+				  sec_dev = getenv(SD_POINT_NAME_2);
+
+				  if(sec_dev != NULL) {
+					  char *temp = strchr(sec_dev, ',');
+					  if(temp) {
+						  temp[0] = '\0';
+					  }
+
+					  result = mount(sec_dev, mount_point, "vfat",
+									 MS_NOATIME | MS_NODEV | MS_NODIRATIME, "shortname=mixed,utf8");
+					  if (result == 0)
+					  {
+						  LOG(ERROR) << " mounted sdcard successful, sec_dev vfat!";
+						  return 0;
+					  }
+
+					  LOG(ERROR) << "tring mount " << sec_dev << " ntfs.";
+					  result = mount(sec_dev, mount_point, "ntfs",
+									 MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+					  if (result == 0)
+					  {
+						  LOG(ERROR) << " mounted sdcard successful, sec_dev vfat!";
+						  return 0;
+					  }
+				  }
+				  LOG(ERROR) << "failed to mount " << mount_point << " error: " << strerror(errno);
+				  return -1;
+			  }
+		  }
+	  }
+	  else
+	  {
+		  LOG(ERROR) << "AB firmware, mount_point is NULL!";
+	  }
+#endif
     return -1;
   }
   if (strcmp(v->fs_type, "ramdisk") == 0) {

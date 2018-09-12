@@ -15,6 +15,9 @@
 #define USB_ROOT "/mnt/usb_storage"
 #define MAX_ARGS 100
 #define SD_POINT_NAME "sd_point_name"
+#ifdef AB_OTA_UPDATER
+#define SD_BLOCK_DEVICE_NODE	("/dev/block/mmcblk0p1")
+#endif
 
 typedef struct {
     char* name;
