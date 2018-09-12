@@ -606,12 +606,14 @@ static int really_install_package(const std::string& path, bool* wipe_cache, boo
     return INSTALL_CORRUPT;
   }
 
+#ifndef AB_OTA_UPDATER
   // Additionally verify the compatibility of the package.
   if (!verify_package_compatibility(zip)) {
     log_buffer->push_back(android::base::StringPrintf("error: %d", kPackageCompatibilityFailure));
     CloseArchive(zip);
     return INSTALL_CORRUPT;
   }
+#endif
 
   // Verify and install the contents of the package.
   ui->Print("Installing update...\n");
