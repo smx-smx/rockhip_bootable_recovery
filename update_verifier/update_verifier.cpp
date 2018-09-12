@@ -65,6 +65,8 @@ using android::hardware::boot::V1_0::IBootControl;
 using android::hardware::boot::V1_0::BoolResult;
 using android::hardware::boot::V1_0::CommandResult;
 
+#define RK_VERIFY_MODE_STRING	("/dev/block/by-name/metadata")
+
 // Find directories in format of "/sys/block/dm-X".
 static int dm_name_filter(const dirent* de) {
   if (android::base::StartsWith(de->d_name, "dm-")) {
@@ -284,7 +286,10 @@ int update_verifier(int argc, char** argv) {
     } else if (android::base::EqualsIgnoreCase(verity_mode, "disabled")) {
       LOG(WARNING) << "dm-verity in disabled mode; marking without verification.";
       skip_verification = true;
-    } else if (verity_mode != "enforcing") {
+    }else if (android::base::EqualsIgnoreCase(verity_mode, RK_VERIFY_MODE_STRING)) {
+      LOG(WARNING) << "dm-verity in RK_VERIFY_MODE_STRING (/dev/block/by-name/metadata) mode; marking without verification.";
+      skip_verification = true;
+    }else if (verity_mode != "enforcing") {
       LOG(ERROR) << "Unexpected dm-verity mode : " << verity_mode << ", expecting enforcing.";
       return reboot_device();
     }
