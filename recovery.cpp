@@ -116,7 +116,7 @@ static const char* METADATA_ROOT = "/mnt/vendor/metadata";
 #else
 static const char* METADATA_ROOT = "/metadata";
 #endif
-static const char *SDCARD_ROOT = "/sdcard";
+static const char *SDCARD_ROOT = "/mnt/external_sd";
 static const char *TEMPORARY_LOG_FILE = "/tmp/recovery.log";
 static const char *TEMPORARY_INSTALL_FILE = "/tmp/last_install";
 static const char *LAST_KMSG_FILE = "/cache/recovery/last_kmsg";
@@ -1101,7 +1101,7 @@ static int apply_from_sdcard(Device* device, bool* wipe_cache) {
             }
         }
 
-        result = install_package(FUSE_SIDELOAD_HOST_PATHNAME, wipe_cache,
+        result = install_package(/*FUSE_SIDELOAD_HOST_PATHNAME*/"/mnt/external_sd/update.zip", wipe_cache,
                                  TEMPORARY_INSTALL_FILE, false, 0/*retry_count*/);
         break;
     }
