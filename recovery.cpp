@@ -74,6 +74,7 @@
 #include "stub_ui.h"
 #include "ui.h"
 #include "rktools.h"
+#include "sdboot.h"
 #include "rkavvin/RkAvvinApi.h"
 
 static const struct option OPTIONS[] = {
@@ -93,6 +94,9 @@ static const struct option OPTIONS[] = {
   { "wipe_ab", no_argument, NULL, 0 },
   { "wipe_package_size", required_argument, NULL, 0 },
   { "prompt_and_wipe_data", no_argument, NULL, 0 },
+  { "fw_update", required_argument, NULL, 'f'+'w' },
+  { "factory_mode", required_argument, NULL, 'f' },
+  { "pcba_test", required_argument, NULL, 'p'+'t' },
   { NULL, 0, NULL, 0 },
 };
 
@@ -524,6 +528,21 @@ static void finish_recovery() {
   sync();  // For good measure.
 }
 
+static int exit_factory_mode_wipe_cmd_in_bcb(void)
+{
+	bootloader_message boot = {};
+	std::string err;
+
+	printf("enter exit_factory_mode_wipe_cmd_in_bcb \n");
+
+	strlcpy(boot.command, "boot-recovery", sizeof(boot.command));
+	strlcpy(boot.recovery, "recovery\n--wipe_all\n", sizeof(boot.recovery));
+	if (!write_bootloader_message(boot, &err)) {
+		printf("exit_factory_mode_wipe_cmd_in_bcb write_bootloader_message failed %s \n",err.c_str());
+	}
+
+	return 0;
+}
 struct saved_log_file {
   std::string name;
   struct stat sb;
@@ -1404,6 +1423,84 @@ void SureMetadataMount() {
         ensure_path_mounted(METADATA_ROOT);
     }
 }
+static int is_boot_from_sd(){
+    char param[1024];
+    int fd, ret;
+    char *s=NULL;
+	int is_sd_boot = 0;
+
+    memset(param,0,1024);
+    fd= open("/proc/cmdline", O_RDONLY);
+    ret = read(fd, (char*)param, 1024);
+
+    s = strstr(param,"storagemedia=sd");
+    if(s != NULL){
+        is_sd_boot = 1;
+    }else{
+        is_sd_boot = 0;
+    }
+
+    close(fd);
+
+	printf("is_boot_from_sd is_sd_boot=%d \n", is_sd_boot);
+	return is_sd_boot;
+}
+
+static int try_do_sdcard_boot(int* stat)
+{
+	int is_sd_mounted = 0;
+	unsigned long i = 0;
+	int is_sdupdate = 0;
+
+	printf("enter try_do_sdcard_boot \n");
+	if(NULL == stat){
+		printf("try_do_sdcard_boot stat is NULL! \n");
+		return 0;
+	}
+	is_sd_mounted = 0;
+	is_sdupdate = 0;
+	if(is_boot_from_sd())
+	{
+		/*try mount sdcard*/
+	    for(i = 0; i < 3; i++) {
+	        if(0 == ensure_path_mounted(EX_SDCARD_ROOT)){
+	            is_sd_mounted = 1;
+	            break;
+	        }else {
+	            printf("try_do_sdcard_boot delay 1sec\n");
+	            sleep(1);
+	        }
+	    }
+
+		printf("try_do_sdcard_boot is_sd_mounted=%d \n", is_sd_mounted);
+		if(is_sd_mounted)
+		{
+			/*check if it's fw_update or not*/
+			VEC_SD_CONFIG vecItem;
+			SDBoot rksdboot;
+
+			if (!rksdboot.do_direct_parse_config_file("/mnt/external_sd/sd_boot_config.config",vecItem)){
+				printf("try_do_sdcard_boot sd_parse_config_file failed \n");
+			}
+			else
+			{
+				    for (i=0;i<vecItem.size();i++) {
+				        if ((strcmp(vecItem[i].strKey.c_str(),"fw_update")==0)){
+				            if (strcmp(vecItem[i].strValue.c_str(),"0")!=0){
+								printf("try_do_sdcard_boot vecItem[i].strValue.c_str()=%s \n", vecItem[i].strValue.c_str());
+								*stat = rksdboot.do_rk_direct_sd_update(vecItem[i].strValue.c_str());
+								is_sdupdate = 1;
+				            }
+				        }
+				    }
+			}
+		}
+	}
+
+	printf("try_do_sdcard_boot is done,  is_sdupdate=%d *stat=%d \n", is_sdupdate, *stat);
+	return is_sdupdate;
+}
+
 int main(int argc, char **argv) {
   // We don't have logcat yet under recovery; so we'll print error on screen and
   // log to stdout (which is redirected to recovery.log) as we used to do.
@@ -1450,10 +1547,16 @@ int main(int argc, char **argv) {
 
   load_volume_table();
   setFlashPoint();
+    SDBoot rksdboot;
   //todo noneed wipe cache in bringup
   has_cache = volume_for_mount_point(CACHE_ROOT) != nullptr;
 
-  std::vector<std::string> args = get_args(argc, argv);
+  std::vector<std::string> args;
+    if(rksdboot.isSDboot() || rksdboot.isUSBboot()){
+        args = rksdboot.get_args(argc, argv);
+    }else{
+        args = get_args(argc, argv);
+    }
   std::vector<char*> args_to_parse(args.size());
   std::transform(args.cbegin(), args.cend(), args_to_parse.begin(),
                  [](const std::string& arg) { return const_cast<char*>(arg.c_str()); });
@@ -1464,6 +1567,8 @@ int main(int argc, char **argv) {
 #endif
 
   const char* update_package = nullptr;
+    const char *factory_mode = nullptr;
+    char *sdboot_update_package = nullptr;
   bool should_wipe_data = false;
   bool should_wipe_all = false;
   bool should_prompt_and_wipe_data = false;
@@ -1478,8 +1583,10 @@ int main(int argc, char **argv) {
   int retry_count = 0;
   bool security_update = false;
 
+
   int arg;
   int option_index;
+	int exit_from_factory = 0;
   while ((arg = getopt_long(args_to_parse.size(), args_to_parse.data(), "", OPTIONS,
                             &option_index)) != -1) {
     switch (arg) {
@@ -1521,7 +1628,9 @@ int main(int argc, char **argv) {
         security_update = true;
         break;
 	  case 'w'+'a': { should_wipe_all = true; should_wipe_data = true; should_wipe_cache = true;} break;
-      case 0: {
+        case 'f': factory_mode = optarg; break;
+        case 'p'+'t': factory_mode = optarg; break;
+        case 0: {
             std::string option = OPTIONS[option_index].name;
             if (option == "wipe_ab") {
                 should_wipe_ab = true;
@@ -1532,12 +1641,11 @@ int main(int argc, char **argv) {
             }
             break;
         }
-	/*
         case 'f'+'w': //fw_update
             if((optarg)&&(!sdboot_update_package)){
                 sdboot_update_package = strdup(optarg);
             }
-            break;*/
+            break;
         case '?':
             LOG(ERROR) << "Invalid command argument";
             continue;
@@ -1665,7 +1773,10 @@ int main(int argc, char **argv) {
         }
       }
     }
-  } else if (should_wipe_data) {
+  }else if (sdboot_update_package != nullptr) {
+        printf("bSDBoot = %d, sdboot_update_package=%s\n", rksdboot.isSDboot(), sdboot_update_package);
+        status = rksdboot.do_rk_mode_update(sdboot_update_package);
+    } else if (should_wipe_data) {
     if (!wipe_data(device)) {
       status = INSTALL_ERROR;
     }
@@ -1678,7 +1789,11 @@ int main(int argc, char **argv) {
               printf("wiping frp success!\n");
           }
     }
-  } else if (should_prompt_and_wipe_data) {
+  } else if (factory_mode != nullptr){
+        status = rksdboot.do_rk_factory_mode();
+		printf("do_factory_mode status=%d factory_mode=%s \n", status, factory_mode);
+		exit_from_factory = 1;
+    } else if (should_prompt_and_wipe_data) {
     ui->ShowText(true);
     ui->SetBackground(RecoveryUI::ERROR);
     if (!prompt_and_wipe_data(device)) {
@@ -1717,19 +1832,34 @@ int main(int argc, char **argv) {
     // If this is an eng or userdebug build, automatically turn on the text display if no command
     // is specified. Note that this should be called before setting the background to avoid
     // flickering the background image.
-    if (is_ro_debuggable()) {
-      ui->ShowText(true);
+	  //try to do sdcard boot
+	  if (try_do_sdcard_boot(&status)){
+        printf("try_do_sdcard_boot is actually do sdupdate status=%d \n", status);
+	  }
+	  else
+	  {
+	      if (is_ro_debuggable()) {
+	        ui->ShowText(true);
+	      }
+	      status = INSTALL_NONE;  // No command specified
+	      ui->SetBackground(RecoveryUI::NO_COMMAND);
+	  }
     }
-    status = INSTALL_NONE;  // No command specified
-    ui->SetBackground(RecoveryUI::NO_COMMAND);
-  }
 
-  if (status == INSTALL_ERROR || status == INSTALL_CORRUPT) {
-    ui->SetBackground(RecoveryUI::ERROR);
-    if (!ui->IsTextVisible()) {
-      sleep(5);
-    }
-  }
+	if(exit_from_factory)
+	{
+		//DO Nothing for now
+		printf("exit from pcba okay exit_from_factory=%d \n", exit_from_factory);
+	}
+	else
+	{
+	    if (status == INSTALL_ERROR || status == INSTALL_CORRUPT) {
+	        ui->SetBackground(RecoveryUI::ERROR);
+	        if (!ui->IsTextVisible()) {
+	            sleep(5);
+	        }
+	    }
+	}
 
   Device::BuiltinAction after = shutdown_after ? Device::SHUTDOWN : Device::REBOOT;
   // 1. If the recovery menu is visible, prompt and wait for commands.
@@ -1739,15 +1869,28 @@ int main(int argc, char **argv) {
   //    without waiting.
   // 4. In all other cases, reboot the device. Therefore, normal users will observe the device
   //    reboot after it shows the "error" screen for 5s.
-  if ((status == INSTALL_NONE && !sideload_auto_reboot) || ui->IsTextVisible()) {
-    Device::BuiltinAction temp = prompt_and_wait(device, status);
-    if (temp != Device::NO_ACTION) {
-      after = temp;
-    }
-  }
+    if(exit_from_factory)
+	{
+		//DO Nothing for now
+		printf("exit from pcba okay exit_from_factory=%d \n", exit_from_factory);
+	}
+	else
+	{
+	    if ((status == INSTALL_NONE && !sideload_auto_reboot) || ui->IsTextVisible()) {
+	        Device::BuiltinAction temp = prompt_and_wait(device, status);
+	        if (temp != Device::NO_ACTION) {
+	            after = temp;
+	        }
+	    }
+	}
 
+    rksdboot.check_device_remove();
   // Save logs and clean up before rebooting or shutting down.
   finish_recovery();
+	if(exit_from_factory)
+	{
+		exit_factory_mode_wipe_cmd_in_bcb();
+	}
 
   switch (after) {
     case Device::SHUTDOWN:
