@@ -161,6 +161,7 @@ LOCAL_STATIC_LIBRARIES := \
     libz \
     libbase \
     libtune2fs \
+    librkupdate \
     libfec \
     libfec_rs \
     libsquashfs_utils \

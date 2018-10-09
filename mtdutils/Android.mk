@@ -13,6 +13,7 @@ include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_CLANG := true
+LOCAL_CFLAGS := -Wno-error
 LOCAL_SRC_FILES := flash_image.c
 LOCAL_MODULE := flash_image
 LOCAL_MODULE_TAGS := eng

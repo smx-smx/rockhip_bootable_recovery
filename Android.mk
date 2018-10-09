@@ -213,7 +213,6 @@ LOCAL_STATIC_LIBRARIES += \
     libselinux \
     libz \
     librkupdate \
-    librkrsa \
     libext2_uuid
 
 LOCAL_HAL_STATIC_LIBRARIES := libhealthd
@@ -306,7 +305,6 @@ include \
     $(LOCAL_PATH)/tools/Android.mk \
     $(LOCAL_PATH)/updater/Android.mk \
     $(LOCAL_PATH)/update_verifier/Android.mk \
-    $(LOCAL_PATH)/rkupdate/update/Android.mk \
-    $(LOCAL_PATH)/rkupdate/rsa/Android.mk \
+    $(LOCAL_PATH)/rkupdate/Android.mk \
     $(LOCAL_PATH)/rkavvin/avvin/Android.mk \
     $(LOCAL_PATH)/mtdutils/Android.mk
