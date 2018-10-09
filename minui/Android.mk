@@ -36,7 +36,7 @@ LOCAL_STATIC_LIBRARIES := \
     libbase
 
 LOCAL_CFLAGS := -Wall -Werror
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include external/libdrm
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include
 
 LOCAL_MODULE := libminui

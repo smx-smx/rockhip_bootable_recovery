@@ -28,6 +28,7 @@
 #include <xf86drmMode.h>
 
 #include "minui/minui.h"
+#include "libdrm_macros.h"
 
 #define ARRAY_SIZE(A) (sizeof(A)/sizeof(*(A)))
 
@@ -164,7 +165,7 @@ GRSurfaceDrm* MinuiBackendDrm::DrmCreateSurface(int width, int height) {
   surface->width = width;
   surface->row_bytes = create_dumb.pitch;
   surface->pixel_bytes = create_dumb.bpp / 8;
-  surface->data = static_cast<unsigned char*>(mmap(nullptr, surface->height * surface->row_bytes,
+  surface->data = static_cast<unsigned char*>(drm_mmap(nullptr, surface->height * surface->row_bytes,
                                                    PROT_READ | PROT_WRITE, MAP_SHARED, drm_fd,
                                                    map_dumb.offset));
   if (surface->data == MAP_FAILED) {
