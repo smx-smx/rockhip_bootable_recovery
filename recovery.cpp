@@ -111,6 +111,7 @@ static const char *COMMAND_FILE = "/cache/recovery/command";
 static const char *LOG_FILE = "/cache/recovery/log";
 static const char *LAST_INSTALL_FILE = "/cache/recovery/last_install";
 static const char *LOCALE_FILE = "/cache/recovery/last_locale";
+static const char *FLAG_FILE = "/cache/recovery/last_flag";
 static const char *CONVERT_FBE_DIR = "/tmp/convert_fbe";
 static const char *CONVERT_FBE_FILE = "/tmp/convert_fbe/convert_fbe";
 static const char *CACHE_ROOT = "/cache";
@@ -125,6 +126,8 @@ static const char *TEMPORARY_LOG_FILE = "/tmp/recovery.log";
 static const char *TEMPORARY_INSTALL_FILE = "/tmp/last_install";
 static const char *LAST_KMSG_FILE = "/cache/recovery/last_kmsg";
 static const char *LAST_LOG_FILE = "/cache/recovery/last_log";
+static char updatepath[128] = "\0";
+bool bAutoUpdateComplete = false;
 // We will try to apply the update package 5 times at most in case of an I/O error or
 // bspatch | imgpatch error.
 static const int RETRY_LIMIT = 4;
@@ -149,6 +152,7 @@ bool modified_flash = false;
 std::string stage;
 const char* reason = nullptr;
 struct selabel_handle* sehandle;
+bool bWipeAfterUpdate = false;
 
 /*
  * The recovery tool communicates with the main system through /cache files.
@@ -516,7 +520,22 @@ static void finish_recovery() {
   if (!clear_bootloader_message(&err)) {
     LOG(ERROR) << "Failed to clear BCB message: " << err;
   }
-
+  if (bAutoUpdateComplete==true) {
+        stopLed(ON_VALUE);
+        FILE *fp = fopen_path(FLAG_FILE, "w");
+        if (fp == NULL) {
+            LOG(ERROR) << "Can't open %s\n" << FLAG_FILE << err;
+        }
+        char strflag[160]="success$path=";
+        strcat(strflag,updatepath);
+        if (fwrite(strflag, 1, sizeof(strflag), fp) != sizeof(strflag)) {
+            LOG(ERROR) << "write %s failed!" << FLAG_FILE << err;
+        }
+        fclose(fp);
+        bAutoUpdateComplete=false;
+    }else{
+        stopLed(OFF_VALUE);
+  }
   // Remove the command file, so recovery won't repeat indefinitely.
   if (has_cache) {
     if (ensure_path_mounted(COMMAND_FILE) != 0 || (unlink(COMMAND_FILE) && errno != ENOENT)) {
@@ -1706,6 +1725,41 @@ int main(int argc, char **argv) {
   }
   printf("\n\n");
 
+#ifdef USE_AUTO_USB_UPDATE
+  printf("Auto update package from USB.\n");
+  if(argc <= 1){
+      rksdboot.ensure_usb_mounted();
+      if(access(usb_rkpackage, F_OK) == 0) {
+          printf("Auto : %s.\n", usb_rkpackage);
+          update_package = usb_rkpackage;
+      }else if(access(usb_rkimage, F_OK) == 0){
+          printf("Auto : %s.\n", usb_rkimage);
+          update_rkimage = usb_rkimage;
+      }
+    }
+#endif
+
+  if (update_package) {
+    // For backwards compatibility on the cache partition only, if
+    // we're given an old 'root' path "CACHE:foo", change it to
+    // "/cache/foo".
+    if (strncmp(update_package, "CACHE:", 6) == 0) {
+        int len = strlen(update_package) + 10;
+        char* modified_path = (char*)malloc(len);
+        if (modified_path) {
+            strlcpy(modified_path, "/cache/", len);
+            strlcat(modified_path, update_package+6, len);
+            printf("(replacing path \"%s\" with \"%s\")\n",
+                   update_package, modified_path);
+            update_package = modified_path;
+        }
+        else
+            printf("modified_path allocation failed\n");
+        }
+        strcpy(updatepath, update_package);
+    }
+    printf("\n");
+
   property_list(print_property, nullptr);
   printf("\n");
 
@@ -1771,11 +1825,22 @@ int main(int argc, char **argv) {
         if (is_ro_debuggable()) {
           ui->ShowText(true);
         }
+      }else{
+          bAutoUpdateComplete=true;
       }
     }
   }else if (sdboot_update_package != nullptr) {
         printf("bSDBoot = %d, sdboot_update_package=%s\n", rksdboot.isSDboot(), sdboot_update_package);
         status = rksdboot.do_rk_mode_update(sdboot_update_package);
+        if (status!=INSTALL_SUCCESS){
+            //SET_ERROR_AND_JUMP("fail to update from sd.", status, INSTALL_ERROR, HANDLE_STATUS);
+            bAutoUpdateComplete = false;
+        }else{
+            bAutoUpdateComplete = true;
+            #ifdef WIPE_AFTER_UPDATE
+            bWipeAfterUpdate = true;
+            #endif
+        }
     } else if (should_wipe_data) {
     if (!wipe_data(device)) {
       status = INSTALL_ERROR;
@@ -1883,7 +1948,6 @@ int main(int argc, char **argv) {
 	        }
 	    }
 	}
-
     rksdboot.check_device_remove();
   // Save logs and clean up before rebooting or shutting down.
   finish_recovery();
