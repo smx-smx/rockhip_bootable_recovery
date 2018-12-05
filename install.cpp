@@ -502,7 +502,9 @@ bool verify_package_compatibility(ZipArchiveHandle package_zip) {
   static constexpr const char* COMPATIBILITY_ZIP_ENTRY = "compatibility.zip";
   ZipString compatibility_entry_name(COMPATIBILITY_ZIP_ENTRY);
   ZipEntry compatibility_entry;
-  if (FindEntry(package_zip, compatibility_entry_name, &compatibility_entry) != 0) {
+  std::string real_product = android::base::GetProperty("ro.target.product", "unkonw");
+  if (FindEntry(package_zip, compatibility_entry_name, &compatibility_entry) != 0 
+     || real_product.compare("box")==0 ) {
     LOG(INFO) << "Package doesn't contain " << COMPATIBILITY_ZIP_ENTRY << " entry";
     return true;
   }
