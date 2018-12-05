@@ -255,6 +255,12 @@ int ensure_path_mounted_at(const char* path, const char* mount_point) {
         int result = mount(v->blk_device, v->mount_point, v->fs_type,
                            MS_NOATIME | MS_NODEV | MS_NODIRATIME, "shortname=mixed,utf8");
         if (result == 0) return 0;
+
+        if (blk_device !=NULL){
+            result = mount(blk_device, v->mount_point, v->fs_type,
+                           MS_NOATIME | MS_NODEV | MS_NODIRATIME, "shortname=mixed,utf8");
+            if (result == 0) return 0;
+        }
         
         LOG(ERROR) << "trying mount "<< v->blk_device << " to ntfs.";
         result = mount(v->blk_device, v->mount_point, "ntfs",
