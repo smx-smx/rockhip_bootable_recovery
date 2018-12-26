@@ -1948,6 +1948,10 @@ int main(int argc, char **argv) {
 	        }
 	    }
 	}
+    //format data after update parameter.
+    if(bWipeAfterUpdate){
+        wipe_data(device);
+    }
     rksdboot.check_device_remove();
   // Save logs and clean up before rebooting or shutting down.
   finish_recovery();

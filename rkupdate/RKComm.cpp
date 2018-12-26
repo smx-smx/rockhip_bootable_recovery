@@ -21,6 +21,7 @@ CRKUsbComm::CRKUsbComm(CRKLog *pLog):CRKComm(pLog)
 	//else
 	//	m_bEmmc = false;
     char *emmc_point = getenv(EMMC_POINT_NAME);
+    pLog->Record(_T("INFO:emmc_point-->is %s"),emmc_point);
     m_hLbaDev = open(emmc_point, O_RDWR|O_SYNC,0);
     if (m_hLbaDev<0){
         if (pLog)
@@ -30,6 +31,10 @@ CRKUsbComm::CRKUsbComm(CRKLog *pLog):CRKComm(pLog)
         if (pLog)
             pLog->Record(_T("INFO:is emmc devices..."));
         m_bEmmc = true;
+        long long  filelen= lseek(m_hLbaDev,0L,SEEK_END);
+	lseek(m_hLbaDev,0L,SEEK_SET);
+	printf("flashSize is %lld\n",filelen);
+        m_FlashSize = filelen;
         close(m_hLbaDev);
     }
 
@@ -55,14 +60,14 @@ CRKUsbComm::CRKUsbComm(CRKLog *pLog):CRKComm(pLog)
             else
             {
                 if (pLog)
-                    pLog->Record(_T("INFO:CRKUsbComm-->%s=%d"),EMMC_DRIVER_DEV,m_hDev);
+                    pLog->Record(_T("INFO:CRKUsbComm EMMC_DRIVER_DEV -->%s=%d"),EMMC_DRIVER_DEV,m_hDev);
             }
 
 		}
 		else
 		{
 			if (pLog)
-				pLog->Record(_T("INFO:CRKUsbComm-->%s=%d"),EMMC_DRIVER_DEV_VENDOR,m_hDev);
+				pLog->Record(_T("INFO:CRKUsbComm EMMC_DRIVER_DEV_VENDOR-->%s=%d"),EMMC_DRIVER_DEV_VENDOR,m_hDev);
 		}
         //get EMMC_DRIVER_DEV_LBA from
         m_hLbaDev= open(emmc_point, O_RDWR|O_SYNC,0);
@@ -74,7 +79,7 @@ CRKUsbComm::CRKUsbComm(CRKLog *pLog):CRKComm(pLog)
 		else
 		{
 			if (pLog)
-				pLog->Record(_T("INFO:CRKUsbComm-->%s=%d"),emmc_point,m_hLbaDev);
+				pLog->Record(_T("INFO:CRKUsbComm emmc_point-->%s=%d"),emmc_point,m_hLbaDev);
 		}
 
 	}

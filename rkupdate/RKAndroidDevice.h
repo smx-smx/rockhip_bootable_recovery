@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fstream>
 #include "gpt.h"
 #include "roots.h"
 #pragma pack(1)

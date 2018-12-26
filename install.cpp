@@ -59,6 +59,7 @@
 
 using namespace std::chrono_literals;
 
+extern bool bWipeAfterUpdate;
 // Default allocation of progress bar segments to operations
 static constexpr int VERIFICATION_PROGRESS_TIME = 60;
 static constexpr float VERIFICATION_PROGRESS_FRACTION = 0.25;
@@ -469,7 +470,10 @@ static int try_update_binary(const std::string& package, ZipArchiveHandle zip, b
       } else {
         LOG(ERROR) << "invalid \"log\" parameters: " << line;
       }
-    } else {
+    } else if (command == "wipe_all"){
+            printf("set bWipeAfterUpdate to true.\n");
+            bWipeAfterUpdate = true;
+    }else {
       LOG(ERROR) << "unknown command [" << command << "]";
     }
   }

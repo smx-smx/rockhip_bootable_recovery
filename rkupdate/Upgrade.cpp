@@ -106,31 +106,37 @@ bool parse_parameter(char *pParameter,PARAM_ITEM_VECTOR &vecItem)
 	UINT uiPartOffset,uiPartSize;
 	STRUCT_PARAM_ITEM item;
 	vecItem.clear();
+        int i=0;
 	while (!paramStream.eof())
 	{
-		getline(paramStream,strLine);
-		line_size = strLine.size();
-		if (line_size==0)
-			continue;
-		if(strLine[0]=='#')
-			continue;
-		if (strLine[line_size-1]=='\r')
-		{
-			strLine = strLine.substr(0,line_size-1);
-		}
-		pos = strLine.find("mtdparts");
-		if (pos==string::npos)
-		{
-			continue;
-		}
-		bFind = true;
-		posColon = strLine.find(':',pos);
-		if (posColon==string::npos)
-		{
-			continue;
-		}		
-		strPartition = strLine.substr(posColon+1);
-		//提取分区信息
+            i++;
+	    getline(paramStream,strLine);
+            line_size = strLine.size();
+	    if (line_size==0)
+            {
+		continue;
+            }
+	    if(strLine[0]=='#')
+            {
+		continue;
+            }
+	    if (strLine[line_size-1]=='\r')
+	    {
+		strLine = strLine.substr(0,line_size-1);
+	    }
+            pos = strLine.find("mtdparts");
+	    if (pos==string::npos)
+	    {
+		continue;
+	    }
+	    bFind = true;
+	    posColon = strLine.find(':',pos);
+	    if (posColon==string::npos)
+	    {
+		continue;
+	    }
+	    strPartition = strLine.substr(posColon+1);
+	    //提取分区信息
 		pos = 0;
 		posComma = strPartition.find(',',pos);
 		while (posComma!=string::npos)
@@ -164,6 +170,80 @@ bool parse_parameter(char *pParameter,PARAM_ITEM_VECTOR &vecItem)
 	return bFind;
 	
 }
+
+bool parse_Gptparameter(string str,PARAM_ITEM_VECTOR &vecItem)
+{
+	bool bRet,bFind=false;
+	string strLine,strPartition,strPartInfo,strPartName;
+	string::size_type line_size,pos,posColon,posComma;
+	UINT uiPartOffset,uiPartSize;
+        ifstream  fin(str);
+	STRUCT_PARAM_ITEM item;
+	vecItem.clear();
+        int i=0;
+	while (getline(fin,strLine))
+	{
+        i++;
+        printf("str = %s",strLine.c_str());
+	line_size = strLine.size();
+	if (line_size==0)
+        {
+	    continue;
+        }
+	    if(strLine[0]=='#')
+        {
+	    continue;
+        }
+	if (strLine[line_size-1]=='\r')
+        {
+	    strLine = strLine.substr(0,line_size-1);
+	}
+	pos = strLine.find("mtdparts");
+	if (pos==string::npos)
+	{
+	    continue;
+	}
+	bFind = true;
+	posColon = strLine.find(':',pos);
+	if (posColon==string::npos)
+	{
+	    continue;
+	}
+	strPartition = strLine.substr(posColon+1);
+	//提取分区信息
+	pos = 0;
+	posComma = strPartition.find(',',pos);
+	while (posComma!=string::npos)
+	{
+	    strPartInfo = strPartition.substr(pos,posComma-pos);
+	    bRet = ParsePartitionInfo(strPartInfo,strPartName,uiPartOffset,uiPartSize);
+	    if (bRet)
+	    {
+	        strcpy(item.szItemName,strPartName.c_str());
+		item.uiItemOffset = uiPartOffset;
+		item.uiItemSize = uiPartSize;
+		vecItem.push_back(item);
+	    }
+	    pos = posComma+1;
+	    posComma = strPartition.find(',',pos);
+	}
+	strPartInfo = strPartition.substr(pos);
+	if (strPartInfo.size()>0)
+	{
+	    bRet = ParsePartitionInfo(strPartInfo,strPartName,uiPartOffset,uiPartSize);
+	    if (bRet)
+	    {
+		strcpy(item.szItemName,strPartName.c_str());
+		item.uiItemOffset = uiPartOffset;
+		item.uiItemSize = uiPartSize;
+		vecItem.push_back(item);
+	    }
+	}
+	break;
+	}
+	return bFind;
+}
+
 bool get_parameter_loader( CRKComm *pComm,char *pParameter, int &nParamSize)
 {
 	if ((nParamSize!=-1)&&(!pParameter))
@@ -1247,5 +1327,143 @@ EXIT_RECOVERY:
 
     return bSuccess;
 }
+bool do_rk_gpt_update(char *szFw,void *pCallback,void *pProgressCallback,char *szBootDev){
+    bool bSuccess=false, bRet,bLock;
+    int i, iRet,iFileSize;
+    CRKImage *pImage=NULL;
+    CRKLog *pLog=NULL;
+    CRKAndroidDevice *pDevice=NULL;
+    CRKComm *pComm=NULL;
+    PARAM_ITEM_VECTOR vecParam;
+    int nParamSize = -1;
+    char *pParam = NULL;
+    DWORD dwBackupOffset = 0;
+    BYTE *m_paramBuffer;
+    BYTE *m_gptBuffer;
+    BYTE *backup_gpt;
+    PARAM_ITEM_VECTOR vecItems;
+    CONFIG_ITEM_VECTOR vecUuids;
+    long long  uiFlashSize;  //bit
+    tstring strFw = szFw;
+    BYTE uid[RKDEVICE_UID_LEN];
+    tstring strUid;
+    STRUCT_RKDEVICE_DESC device;
+    FILE *m_pFile;
+    DWORD uiActualRead;
+    pLog->Record("ERROR:strFw======%s",szFw);
+    pLog = new CRKLog();
+    if (!pLog)
+	goto EXIT_UPGRADE;
+    pLog->Record("Start to do_rk_gpt_update ...");
+    pComm = new CRKUsbComm(pLog);
+	if (!pComm)
+	{
+		pLog->Record("ERROR:do_rk_gpt_update-->new CRKComm failed!");
+		goto EXIT_UPGRADE;
+	}
+    uiFlashSize = pComm->m_FlashSize;
+    pLog->Record("uiFlashSize ------------ %lld...",uiFlashSize);
+    if (!m_gptBuffer)
+	{
+		m_gptBuffer = new BYTE[SECTOR_SIZE*67];
+		if (!m_gptBuffer)
+		{
+			if (pLog)
+			{
+				pLog->Record(_T("ERROR:RKA_Gpt_Download-->new memory failed,err=%d)"),errno);
+			}
+			goto EXIT_UPGRADE;
+		}
+	}
+	memset(m_gptBuffer,0,SECTOR_SIZE*67);
+    //文件操作
+    m_pFile = fopen(szFw,"rb");
+    fseek(m_pFile, 0, SEEK_END);
+    iFileSize=ftell(m_pFile);
+    m_paramBuffer = new BYTE[iFileSize];
+    memset(m_paramBuffer,0,iFileSize);
+    pLog->Record(_T("iFileSize is %d"),iFileSize);
+    fseek(m_pFile,0,SEEK_SET);
+	uiActualRead = fread(m_paramBuffer,1,iFileSize,m_pFile);
+    if(uiActualRead != iFileSize)
+    {
+        pLog->Record(_T("ERROR:RKA_Gpt_Download-->read parameter file fail,read is %d,total is %d!"),uiActualRead,iFileSize);
+    }
+    bRet = parse_parameter((char *)(m_paramBuffer+8),vecItems);
+	if (!bRet)
+	{
+		if (pLog)
+		{
+			pLog->Record(_T("ERROR:RKA_Gpt_Download-->parse_parameter failed)"));
+		}
+		goto EXIT_UPGRADE;
+	}
+	bRet = get_uuid_from_parameter((char *)(m_paramBuffer+8),vecUuids);
+	backup_gpt = m_gptBuffer+34*SECTOR_SIZE;
+	create_gpt_buffer(m_gptBuffer,vecItems,vecUuids,uiFlashSize/512);
+	memcpy(backup_gpt, m_gptBuffer + 2* SECTOR_SIZE, 32 * SECTOR_SIZE);
+	memcpy(backup_gpt + 32 * SECTOR_SIZE, m_gptBuffer + SECTOR_SIZE, SECTOR_SIZE);
+	prepare_gpt_backup(m_gptBuffer, backup_gpt);
+	iRet = pComm->RKU_WriteLBA(0,34,m_gptBuffer);
+	if (iRet!=ERR_SUCCESS)
+	{
+		if (pLog)
+		{
+			pLog->Record(_T("ERROR:RKA_Gpt_Download-->write gpt master failed,RetCode(%d)"),iRet);
+		}
+		goto EXIT_UPGRADE;
+	}
+	if (pLog)
+	{
+		pLog->Record(_T("INFO:RKA_Gpt_Download-->write gpt master successfully!"));
+	}
+	iRet = pComm->RKU_WriteLBA(uiFlashSize/512-33,33,backup_gpt);
+	if (iRet!=ERR_SUCCESS)
+	{
+		if (pLog)
+		{
+			pLog->Record(_T("ERROR:RKA_Gpt_Download-->write gpt backup failed,RetCode(%d)"),iRet);
+		}
+		goto EXIT_UPGRADE;
+	}
+	if (pLog)
+	{
+		pLog->Record(_T("INFO:RKA_Gpt_Download-->write gpt backup also successfully!"));
+	}
+    bSuccess = true;
 
+EXIT_UPGRADE:
+	if (bSuccess)
+	{
+		pLog->Record("Finish to upgrade parameter.");
+	}
+	else
+	{
+		pLog->Record("Fail to upgrade parameter!");
+	}
+	if (pLog)
+	{
+		delete pLog;
+		pLog = NULL;
+	}
+	if (pImage)
+	{
+		delete pImage;
+		pImage = NULL;
+	}
+	if (pDevice)
+	{
+		delete pDevice;
+		pDevice = NULL;
+	}
+	else
+	{
+		if (pComm)
+		{
+			delete pComm;
+			pComm = NULL;
+		}
+	}
+	return bSuccess;
+}
 

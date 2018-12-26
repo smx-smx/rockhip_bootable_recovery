@@ -71,12 +71,13 @@ struct bootloader_message {
     // stage string (for multistage packages) and possible future
     // expansion.
     char stage[32];
-
+    //return update parameter flag
+    char parameter[32];
     // The 'reserved' field used to be 224 bytes when it was initially
     // carved off from the 1024-byte recovery field. Bump it up to
     // 1184-byte so that the entire bootloader_message struct rounds up
     // to 2048-byte.
-    char reserved[1184];
+    char reserved[1152];
 };
 
 /**

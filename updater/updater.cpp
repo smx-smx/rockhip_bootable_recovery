@@ -52,6 +52,8 @@ extern bool have_eio_error;
 
 struct selabel_handle *sehandle;
 
+const char* g_package_file;
+
 static void UpdaterLogger(android::base::LogId /* id */, android::base::LogSeverity /* severity */,
                           const char* /* tag */, const char* /* file */, unsigned int /* line */,
                           const char* message) {
@@ -91,6 +93,7 @@ int main(int argc, char** argv) {
   // Extract the script from the package.
 
   const char* package_filename = argv[3];
+  g_package_file = package_filename;
   MemMapping map;
   if (!map.MapFile(package_filename)) {
     LOG(ERROR) << "failed to map package " << argv[3];

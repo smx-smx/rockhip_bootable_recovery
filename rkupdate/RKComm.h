@@ -177,6 +177,7 @@ public:
 	virtual int RKU_ShowNandLBADevice()=0;
 	virtual long long RKU_GetFlashSize();
 	CRKComm(CRKLog *pLog);
+        long long m_FlashSize;
 	virtual ~CRKComm();
 protected:
 	CRKLog *m_log;
