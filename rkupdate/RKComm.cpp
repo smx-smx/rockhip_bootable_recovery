@@ -318,7 +318,7 @@ int CRKUsbComm::RKU_TestDeviceReady(DWORD *dwTotal,DWORD *dwCurrent,BYTE bySubCo
 {
 	return ERR_DEVICE_READY;
 }
-int CRKUsbComm::RKU_WriteLBA(DWORD dwPos,DWORD dwCount,BYTE* lpBuffer,BYTE bySubCode)
+int CRKUsbComm::RKU_WriteLBALoader(DWORD dwPos,DWORD dwCount,BYTE* lpBuffer,BYTE bySubCode)
 {
 	printf("---------WriteLBA\n");
 	long long ret;
@@ -387,6 +387,75 @@ int CRKUsbComm::RKU_WriteLBA(DWORD dwPos,DWORD dwCount,BYTE* lpBuffer,BYTE bySub
 //			m_log->Record(_T("ERROR:RKU_WriteLBA fsync failed,err=%d"),errno);
 //	}
 	return ERR_SUCCESS;
+}
+int CRKUsbComm::RKU_WriteLBA(DWORD dwPos,DWORD dwCount,BYTE* lpBuffer,BYTE bySubCode)
+{
+        printf("---------WriteLBA\n");
+        long long ret;
+    long long dwPosBuf;
+        if (m_hLbaDev<0)
+        {
+                printf("---------m_hLbaDev<0\n");
+                if (!m_bEmmc)
+                {
+                        printf("---------nand\n");
+                        m_hLbaDev= open(NAND_DRIVER_DEV_LBA,O_RDWR|O_SYNC,0);
+                        if (m_hLbaDev<0)
+                        {
+                                if (m_log)
+                                        m_log->Record(_T("ERROR:RKU_WriteLBA-->open %s failed,err=%d"),NAND_DRIVER_DEV_LBA,errno);
+                                return ERR_DEVICE_OPEN_FAILED;
+                        }
+                        else
+                        {
+                                if (m_log)
+                                        m_log->Record(_T("INFO:RKU_WriteLBA-->open %s ok,handle=%d"),NAND_DRIVER_DEV_LBA,m_hLbaDev);
+                        }
+                }
+                else
+                        return ERR_DEVICE_OPEN_FAILED;
+        }
+        if (m_bEmmc && !CRKAndroidDevice::bGptFlag)
+        {
+                m_log->Record(_T("add----8192"));
+                dwPos += 8192;
+        }
+        //如果是非GPT需要加8192,但是单独升级loader不需要加8192(4M)
+    /*
+        if (m_bEmmc)
+                if(!CRKAndroidDevice::bGptFlag && !CRKAndroidDevice::bOnlyLoader)
+                {
+                        m_log->Record(_T("aaaaadd----8192"));
+                        dwPos += 8192;
+                }*/
+    dwPosBuf = dwPos;
+        ret = lseek64(m_hLbaDev,(off64_t)dwPosBuf*512,SEEK_SET);
+        if (ret<0)
+        {
+                if (m_log){
+                        m_log->Record(_T("ERROR:RKU_WriteLBA seek failed,err=%d,ret:%lld"),errno, ret);
+            m_log->Record(_T("ERROR:the dwPosBuf = dwPosBuf*512,dwPosBuf:%lld!"), dwPosBuf*512);
+        }
+                m_log->Record(_T("ERROR:RKU_WriteLBA seek failed,err=%d,ret:%lld"),errno, ret);
+        m_log->Record(_T("ERROR:the dwPosBuf = dwPosBuf*512,dwPosBuf:%lld!"), dwPosBuf*512);
+                return ERR_FAILED;
+
+        }
+        ret = write(m_hLbaDev,lpBuffer,dwCount*512);
+        if (ret!=dwCount*512)
+        {
+                sleep(1);
+                if (m_log)
+                        m_log->Record(_T("ERROR:RKU_WriteLBA write failed,err=%d"),errno);
+                return ERR_FAILED;
+        }
+//      ret = fsync(m_hLbaDev);
+//      if (ret!=0)
+//      {
+//              if (m_log)
+//                      m_log->Record(_T("ERROR:RKU_WriteLBA fsync failed,err=%d"),errno);
+//      }
+        return ERR_SUCCESS;
 }
 int CRKUsbComm::RKU_WriteSector(DWORD dwPos,DWORD dwCount,BYTE* lpBuffer)
 {

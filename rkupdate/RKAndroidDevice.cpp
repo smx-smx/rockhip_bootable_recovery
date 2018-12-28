@@ -662,7 +662,7 @@ int CRKAndroidDevice::WriteIDBlock(PBYTE lpIDBlock,DWORD dwSectorNum,bool bErase
 	uiBegin = 0;
 	for(i=0;i<=4;i++)
 	{
-		iRet = m_pComm->RKU_WriteLBA(64+i*1024,dwSectorNum,lpIDBlock);
+		iRet = m_pComm->RKU_WriteLBALoader(64+i*1024,dwSectorNum,lpIDBlock);
 		if (iRet!=ERR_SUCCESS)
 		{
 			if (m_pLog)
