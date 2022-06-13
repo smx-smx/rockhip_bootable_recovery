@@ -38,7 +38,6 @@
 #include <wchar.h>
 #include <errno.h>
 #include <ctype.h>
-#include "cutils/properties.h"
 
 #include "Property.hpp"
 #include <list>

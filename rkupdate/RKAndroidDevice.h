@@ -50,7 +50,7 @@ typedef struct
 	USHORT	usFlashInfoOffset;
 	USHORT	usFlashInfoLen;
 	UCHAR	reserved[384];
-	UINT	uiFlashSize;//ÒÔsectorÎªµ¥Î»
+	UINT	uiFlashSize;//ä»¥sectorä¸ºå•ä½
 	BYTE    reserved1;
 	BYTE    bAccessTime;
 	USHORT  usBlockSize;
@@ -139,19 +139,19 @@ const BYTE Wipe_All[]={0x72,0x65,0x63,0x6F,0x76,0x65,
 #define PART_NAME				32
 typedef struct
 {
-	char name[PART_NAME];// ·ÖÇøÃû³Æ
-	char file[RELATIVE_PATH];// Ïà¶ÔÂ·¾¶Ãû£¬ÌáÈ¡ÎÄ¼şÊ±ÓÃµ½
-	unsigned int part_size;//·ÖÇøÕ¼ÓÃÉÈÇøÊı
-	unsigned int offset;// ÎÄ¼şÔÚImageÖĞµÄÆ«ÒÆ
-	unsigned int flash_offset;// ÉÕĞ´µ½FlashÖĞµÄÎ»ÖÃ(ÒÔsectorÎªµ¥Î»)
-	unsigned int usespace;// ÎÄ¼şÕ¼ÓÃ¿Õ¼ä£¨°´PAGE¶ÔÆë)
-	unsigned int size;// ×Ö½ÚÊı£¬Êµ¼ÊÎÄ¼ş´óĞ¡
+	char name[PART_NAME];// åˆ†åŒºåç§°
+	char file[RELATIVE_PATH];// ç›¸å¯¹è·¯å¾„åï¼Œæå–æ–‡ä»¶æ—¶ç”¨åˆ°
+	unsigned int part_size;//åˆ†åŒºå ç”¨æ‰‡åŒºæ•°
+	unsigned int offset;// æ–‡ä»¶åœ¨Imageä¸­çš„åç§»
+	unsigned int flash_offset;// çƒ§å†™åˆ°Flashä¸­çš„ä½ç½®(ä»¥sectorä¸ºå•ä½)
+	unsigned int usespace;// æ–‡ä»¶å ç”¨ç©ºé—´ï¼ˆæŒ‰PAGEå¯¹é½)
+	unsigned int size;// å­—èŠ‚æ•°ï¼Œå®é™…æ–‡ä»¶å¤§å°
 }STRUCT_RKIMAGE_ITEM,*PSTRUCT_RKIMAGE_ITEM;
 
 typedef struct tagRKIMAGE_HDR
 {
 	unsigned int tag;
-	unsigned int size;// ÎÄ¼ş´óĞ¡£¬²»º¬Ä©Î²µÄCRCĞ£ÑéÂë
+	unsigned int size;// æ–‡ä»¶å¤§å°ï¼Œä¸å«æœ«å°¾çš„CRCæ ¡éªŒç 
 	char machine_model[MAX_MACHINE_MODEL];
 	char machine_info[MAX_MACHINE_INFO];
 	char manufacturer[MAX_MANUFACTURER];

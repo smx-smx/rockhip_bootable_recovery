@@ -48,21 +48,21 @@ typedef struct _STRUCT_FLASH_INFO
 	BYTE	blockState[IDBLOCK_TOP];
 	UINT	uiBlockNum;
 	BYTE	bECCBits;
-	BYTE	bAccessTime;  //���η���Flash�ļ��ʱ��
-	BYTE	bFlashCS;  // FlashƬѡ(FlashƬѡ������1��������0)
-	USHORT  usValidSecPerBlock;//ÿ�����ʹ�õ�������=���С/ҳ��С*4
-	USHORT  usPhyBlokcPerIDB;//ÿ��IDBlockռ�õ�����������
-	UINT    uiSecNumPerIDB;//ÿ��IDBlockռ�õ�������
+	BYTE	bAccessTime;  //两次访问Flash的间隔时间
+	BYTE	bFlashCS;  // Flash片选(Flash片选存在置1，否则置0)
+	USHORT  usValidSecPerBlock;//每块可以使用的扇区数=块大小/页大小*4
+	USHORT  usPhyBlokcPerIDB;//每个IDBlock占用的物理块数量
+	UINT    uiSecNumPerIDB;//每个IDBlock占用的扇区数
 }STRUCT_FLASH_INFO, *PSTRUCT_FLASH_INFO;
 typedef struct _STRUCT_FLASHINFO_CMD
 {
-	UINT	uiFlashSize;	// Flash��С����SectorΪ��λ��
-	USHORT	usBlockSize;	// ������Block��С����SectorΪ��λ��
-	BYTE	bPageSize;		// ������Page��С����SectorΪ��λ��
+	UINT	uiFlashSize;	// Flash大小（以Sector为单位）
+	USHORT	usBlockSize;	// 物理的Block大小（以Sector为单位）
+	BYTE	bPageSize;		// 物理的Page大小（以Sector为单位）
 	BYTE	bECCBits;		// 8/14
-	BYTE	bAccessTime;	// ���η���Flash�ļ��ʱ��
-	BYTE	bManufCode;		// ����ʶ����
-	BYTE	bFlashCS;		// FlashƬѡ(��FlashƬѡ���ڣ�����Ӧ��Bit��1��������0)
+	BYTE	bAccessTime;	// 两次访问Flash的间隔时间
+	BYTE	bManufCode;		// 厂商识别码
+	BYTE	bFlashCS;		// Flash片选(若Flash片选存在，则将相应的Bit置1，否则置0)
 	BYTE	reserved[501];
 }STRUCT_FLASHINFO_CMD, *PSTRUCT_FLASHINFO_CMD;
 typedef struct  

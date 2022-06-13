@@ -136,7 +136,7 @@ bool parse_parameter(char *pParameter,PARAM_ITEM_VECTOR &vecItem)
 		continue;
 	    }
 	    strPartition = strLine.substr(posColon+1);
-	    //提取分区信息
+	    //鎻愬彇鍒嗗尯淇℃伅
 		pos = 0;
 		posComma = strPartition.find(',',pos);
 		while (posComma!=string::npos)
@@ -210,7 +210,7 @@ bool parse_Gptparameter(string str,PARAM_ITEM_VECTOR &vecItem)
 	    continue;
 	}
 	strPartition = strLine.substr(posColon+1);
-	//提取分区信息
+	//鎻愬彇鍒嗗尯淇℃伅
 	pos = 0;
 	posComma = strPartition.find(',',pos);
 	while (posComma!=string::npos)
@@ -265,7 +265,7 @@ bool get_parameter_loader( CRKComm *pComm,char *pParameter, int &nParamSize)
 		return false;
 	}
 	if (nParamSize==-1)
-	{//获取parameter大小
+	{//鑾峰彇parameter澶у皬
 		nParamSize = *pParamSize;
 		return true;
 	}
@@ -1376,7 +1376,7 @@ bool do_rk_gpt_update(char *szFw,void *pCallback,void *pProgressCallback,char *s
 		}
 	}
 	memset(m_gptBuffer,0,SECTOR_SIZE*67);
-    //文件操作
+    //鏂囦欢鎿嶄綔
     m_pFile = fopen(szFw,"rb");
     fseek(m_pFile, 0, SEEK_END);
     iFileSize=ftell(m_pFile);

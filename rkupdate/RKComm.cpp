@@ -351,7 +351,7 @@ int CRKUsbComm::RKU_WriteLBALoader(DWORD dwPos,DWORD dwCount,BYTE* lpBuffer,BYTE
 		m_log->Record(_T("add----8192"));
 		dwPos += 8192;
 	}*/
-	//如果是非GPT需要加8192,但是单独升级loader不需要加8192(4M)
+	//濡傛灉鏄潪GPT闇�瑕佸姞8192,浣嗘槸鍗曠嫭鍗囩骇loader涓嶉渶瑕佸姞8192(4M)
     /*
 	if (m_bEmmc)
 		if(!CRKAndroidDevice::bGptFlag && !CRKAndroidDevice::bOnlyLoader)
@@ -420,7 +420,7 @@ int CRKUsbComm::RKU_WriteLBA(DWORD dwPos,DWORD dwCount,BYTE* lpBuffer,BYTE bySub
                 m_log->Record(_T("add----8192"));
                 dwPos += 8192;
         }
-        //如果是非GPT需要加8192,但是单独升级loader不需要加8192(4M)
+        //濡傛灉鏄潪GPT闇�瑕佸姞8192,浣嗘槸鍗曠嫭鍗囩骇loader涓嶉渶瑕佸姞8192(4M)
     /*
         if (m_bEmmc)
                 if(!CRKAndroidDevice::bGptFlag && !CRKAndroidDevice::bOnlyLoader)

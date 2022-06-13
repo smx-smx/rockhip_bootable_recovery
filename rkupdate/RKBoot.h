@@ -34,7 +34,7 @@ typedef struct
 	WCHAR szName[20];
 	DWORD dwDataOffset;
 	DWORD dwDataSize;
-	DWORD dwDataDelay;//“‘√ÎŒ™µ•Œª
+	DWORD dwDataDelay;//‰ª•Áßí‰∏∫Âçï‰Ωç
 }STRUCT_RKBOOT_ENTRY,*PSTRUCT_RKBOOT_ENTRY;
 
 

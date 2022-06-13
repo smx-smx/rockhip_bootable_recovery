@@ -1,0 +1,21 @@
+add_library(rkupdate
+	STATIC
+		CRC.cpp
+		MD5Checksum.cpp
+		mounts.cpp
+		RKAndroidDevice.cpp
+		RKBoot.cpp
+		RKComm.cpp
+		RKDevice.cpp
+		RKImage.cpp
+		RKLog.cpp
+		RKSparse.cpp
+		Upgrade.cpp
+		../roots.cpp
+		../rktools.cpp
+		../sdboot.cpp
+)
+target_link_libraries(rkupdate
+	android_deps
+	log
+)

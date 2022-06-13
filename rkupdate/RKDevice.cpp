@@ -186,7 +186,7 @@ CRKDevice::~CRKDevice()
 }
 bool CRKDevice::SetObject(CRKImage *pImage,CRKComm *pComm,CRKLog *pLog)
 {
-/*pImage¿ÉÒÔÎª¿Õ,ÓÃÓÚÍê³É²»ÓÃ¹Ì¼ş²ÎÓëµÄ²Ù×÷*/
+/*pImageå¯ä»¥ä¸ºç©º,ç”¨äºå®Œæˆä¸ç”¨å›ºä»¶å‚ä¸çš„æ“ä½œ*/
 	if (!pComm)
 	{
 		return false;
@@ -296,11 +296,11 @@ bool CRKDevice::BuildBlockStateMap(BYTE bFlashCS)
 	int iRet,i,j ;
 	memset(blockState, 0, 64);
 	iRet = m_pComm->RKU_TestBadBlock( bFlashCS, 0, MAX_TEST_BLOCKS, blockState);
-	if(ERR_SUCCESS == iRet)//ÎŞ»µ¿é
+	if(ERR_SUCCESS == iRet)//æ— åå—
 	{
 //		return true;
 //	}
-//	else if(ERR_FOUND_BAD_BLOCK == iRet)//ÓĞ»µ¿é
+//	else if(ERR_FOUND_BAD_BLOCK == iRet)//æœ‰åå—
 //	{
 		for(i=0; i<64; i++)
 		{
@@ -320,7 +320,7 @@ bool CRKDevice::BuildBlockStateMap(BYTE bFlashCS)
 		}
 		return true;
 	}
-	else//²Ù×÷Ê§°Ü
+	else//æ“ä½œå¤±è´¥
 	{
 		if (m_pLog)
 		{
@@ -389,7 +389,7 @@ bool CRKDevice::EraseMutilBlock(BYTE bFlashCS,DWORD dwPos,DWORD dwCount,bool bFo
 			++dwTimes;
 		}
 		else
-		{//²Ù×÷Ê§°Ü
+		{//æ“ä½œå¤±è´¥
 			if (m_pLog)
 			{
 				m_pLog->Record(_T("ERROR:EraseMutilBlock-->RKU_EraseBlock failed,RetCode(%d)"),iRet);
@@ -409,7 +409,7 @@ bool CRKDevice::EraseMutilBlock(BYTE bFlashCS,DWORD dwPos,DWORD dwCount,bool bFo
 			dwCount = 0;
 		}
 		else
-		{//²Ù×÷Ê§°Ü
+		{//æ“ä½œå¤±è´¥
 			if (m_pLog)
 			{
 				m_pLog->Record(_T("ERROR:EraseMutilBlock-->RKU_EraseBlock failed,RetCode(%d)"),iRet);
@@ -635,7 +635,7 @@ bool CRKDevice::GetIDBData(UINT uiIDBCount,PBYTE lpBuf,UINT uiSecCount)
 		}
 		
 		if (bRet)
-		{//ÏàÍ¬
+		{//ç›¸åŒ
 			delete []pIDB;
 			pIDB = NULL;
 			return true;

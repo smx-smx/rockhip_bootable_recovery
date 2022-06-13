@@ -23,7 +23,7 @@ CRKLog::~CRKLog()
 }
 void CRKLog::Record(const tchar* lpFmt,...)
 {	
-	/************************* Êä³öµ½ÈÕÖ¾ ***********************/
+	/************************* è¾“å‡ºåˆ°æ—¥å¿— ***********************/
 	va_list ap;
     va_start(ap, lpFmt);
 	printf("librkupdate_");

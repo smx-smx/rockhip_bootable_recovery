@@ -103,7 +103,7 @@ bool CRKBoot::GetEntryProperty(ENUM_RKBOOTENTRY type,UCHAR ucIndex,DWORD &dwSize
 	case ENTRYLOADER:
 		dwOffset = m_loaderOffset;
 		ucCount = m_loaderCount;
-		ucSize = m_loaderSize;//Loader³¤¶ÈÉú³ÉÊ±ÒÑ¾­512¶ÔÆë
+		ucSize = m_loaderSize;//Loaderé•¿åº¦ç”Ÿæˆæ—¶å·²ç»512å¯¹é½
 		break;
 	default:
 		return false;

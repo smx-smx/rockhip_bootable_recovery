@@ -1,0 +1,9 @@
+[submodule "external/platform/system/extras"]
+	path = external/platform/system/extras
+	url = https://android.googlesource.com/platform/system/extras
+[submodule "external/system/vold"]
+	path = external/system/vold
+	url = https://android.googlesource.com/platform/system/vold
+[submodule "external/platform/external/e2fsprogs"]
+	path = external/platform/external/e2fsprogs
+	url = https://android.googlesource.com/platform/external/e2fsprogs
