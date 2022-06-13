@@ -456,7 +456,7 @@ bool check_fw_crc(CRKComm *pComm,DWORD dwOffset,PSTRUCT_RKIMAGE_HDR pHeader,CRKL
 	
 }
 
-bool download_backup_image(PARAM_ITEM_VECTOR &vecParam,char *pszItemName,DWORD dwBackupOffset,STRUCT_RKIMAGE_HDR &hdr,CRKComm *pComm,CRKLog *pLog=NULL)
+bool download_backup_image(PARAM_ITEM_VECTOR &vecParam,const char *pszItemName,DWORD dwBackupOffset,STRUCT_RKIMAGE_HDR &hdr,CRKComm *pComm,CRKLog *pLog=NULL)
 {
 	DWORD dwToOffset,dwToSize;
 	int i,iRet;
@@ -756,7 +756,7 @@ bool UnlockDevice(CRKImage *pImage,CRKLog *pLog,unsigned char *pKey,unsigned int
 {
 	PBYTE pMd5,pSignMd5;
 	int nSignSize;
-	unsigned int nOutput;
+	unsigned int nOutput = 0;
 	bool bRet;
 	BYTE output[256];
 	string strOutput;
@@ -1338,9 +1338,9 @@ bool do_rk_gpt_update(char *szFw,void *pCallback,void *pProgressCallback,char *s
     int nParamSize = -1;
     char *pParam = NULL;
     DWORD dwBackupOffset = 0;
-    BYTE *m_paramBuffer;
-    BYTE *m_gptBuffer;
-    BYTE *backup_gpt;
+    BYTE *m_paramBuffer = nullptr;
+    BYTE *m_gptBuffer = nullptr;
+    BYTE *backup_gpt = nullptr;
     PARAM_ITEM_VECTOR vecItems;
     CONFIG_ITEM_VECTOR vecUuids;
     long long  uiFlashSize;  //bit
@@ -1348,7 +1348,7 @@ bool do_rk_gpt_update(char *szFw,void *pCallback,void *pProgressCallback,char *s
     BYTE uid[RKDEVICE_UID_LEN];
     tstring strUid;
     STRUCT_RKDEVICE_DESC device;
-    FILE *m_pFile;
+    FILE *m_pFile = nullptr;
     DWORD uiActualRead;
     pLog->Record("ERROR:strFw======%s",szFw);
     pLog = new CRKLog();
