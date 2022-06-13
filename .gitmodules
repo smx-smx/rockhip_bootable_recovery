@@ -1,9 +1,18 @@
+[submodule "external/platform/system/core"]
+	path = external/platform/system/core
+	url = https://android.googlesource.com/platform/system/core
+[submodule "external/platform/system/vold"]
+	path = external/platform/system/vold
+	url = https://android.googlesource.com/platform/system/vold
 [submodule "external/platform/system/extras"]
 	path = external/platform/system/extras
 	url = https://android.googlesource.com/platform/system/extras
-[submodule "external/system/vold"]
-	path = external/system/vold
-	url = https://android.googlesource.com/platform/system/vold
+[submodule "external/platform/bionic"]
+	path = external/platform/bionic
+	url = https://android.googlesource.com/platform/bionic
 [submodule "external/platform/external/e2fsprogs"]
 	path = external/platform/external/e2fsprogs
 	url = https://android.googlesource.com/platform/external/e2fsprogs
+[submodule "external/platform/external/selinux"]
+	path = external/platform/external/selinux
+	url = https://android.googlesource.com/platform/external/selinux
